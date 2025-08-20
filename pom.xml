@@ -332,6 +332,13 @@
                 <artifactId>ruoyi-generator</artifactId>
                 <version>${revision}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.ruoyi</groupId>
+                <artifactId>ruoyi-redeem</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
