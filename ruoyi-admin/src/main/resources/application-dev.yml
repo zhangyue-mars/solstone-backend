@@ -13,6 +13,7 @@ spring:
       strict: true
       datasource:
         # 主库数据源
+        # 部署到服务器上的时候，127.0.0.1:3306需改为host.docker.internal！！！
         master:
           type: ${spring.datasource.type}
           driverClassName: com.mysql.cj.jdbc.Driver
