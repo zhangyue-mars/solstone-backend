@@ -1,3 +1,5 @@
+    
+    
 package org.ruoyi.redeem.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -28,9 +30,23 @@ public class SysRedeemCodeServiceImpl implements ISysRedeemCodeService {
     private SysUserMapper sysUserMapper;
 
     @Override
-    public IPage<SysRedeemCode> selectPageList(Page<SysRedeemCode> page, SysRedeemCode query) {
+    public IPage<SysRedeemCode> selectPageList(Page<SysRedeemCode> page, SysRedeemCode query, Integer isRedeemed, String cardNo, String code, java.math.BigDecimal minAmount, java.math.BigDecimal maxAmount) {
         QueryWrapper<SysRedeemCode> wrapper = new QueryWrapper<>();
-        // 可根据需要添加查询条件，如：wrapper.eq("code", query.getCode());
+        if (isRedeemed != null) {
+            wrapper.eq("is_redeemed", isRedeemed);
+        }
+        if (cardNo != null && !cardNo.isEmpty()) {
+            wrapper.eq("card_no", cardNo);
+        }
+        if (code != null && !code.isEmpty()) {
+            wrapper.eq("code", code);
+        }
+        if (minAmount != null) {
+            wrapper.ge("amount", minAmount);
+        }
+        if (maxAmount != null) {
+            wrapper.le("amount", maxAmount);
+        }
         return sysRedeemCodeMapper.selectPage(page, wrapper);
     }
 
@@ -106,5 +122,17 @@ public class SysRedeemCodeServiceImpl implements ISysRedeemCodeService {
             sb.append(chars.charAt(rnd.nextInt(chars.length())));
         }
         return sb.toString();
+    }
+
+
+    @Override
+    public boolean deleteByCode(String code) {
+        return sysRedeemCodeMapper.delete(new QueryWrapper<SysRedeemCode>().eq("code", code)) > 0;
+    }
+
+    @Override
+    public int deleteByCodes(java.util.List<String> codes) {
+        if (codes == null || codes.isEmpty()) return 0;
+        return sysRedeemCodeMapper.delete(new QueryWrapper<SysRedeemCode>().in("code", codes));
     }
 }
