@@ -90,6 +90,7 @@ public class CaptchaController {
         String key = GlobalConstants.CAPTCHA_CODE_KEY + emailRequest.getUsername();
         String code = RandomUtil.randomNumbers(4);
         RedisUtils.setCacheObject(key, code, Duration.ofMinutes(Constants.CAPTCHA_EXPIRATION));
+        log.info("发送验证码 => Redis Key: {}, Code: {}", key, code);
         // 自定义邮箱模板
         String model = configService.getConfigValue("mail", "mailModel");
         String mailTitle = configService.getConfigValue("mail", "mailTitle");

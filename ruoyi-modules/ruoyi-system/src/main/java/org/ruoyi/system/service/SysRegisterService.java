@@ -39,8 +39,6 @@ public class SysRegisterService {
      * 注册
      */
     public void register(RegisterBody registerBody) {
-
-
         String tenantId = Constants.TENANT_ID;
         if(StringUtils.isNotBlank(registerBody.getTenantId())){
             tenantId = registerBody.getTenantId();
@@ -91,15 +89,38 @@ public class SysRegisterService {
      *
      * @param username 用户名
      */
-    public void validateEmail(String username,String code) {
-        String key = GlobalConstants.CAPTCHA_CODE_KEY + username;
-         String captcha = RedisUtils.getCacheObject(key);
-        if(code.equals(captcha)){
-            RedisUtils.deleteObject(captcha);
-        }else {
+//    public void validateEmail(String username,String code) {
+////        String key = GlobalConstants.CAPTCHA_CODE_KEY + username;
+////         String captcha = RedisUtils.getCacheObject(key);
+////        if(code.equals(captcha)){
+////            RedisUtils.deleteObject(captcha);
+////        }else {
+////            throw new BaseException("验证码错误,请重试！");
+////        }
+////    }
+    public void validateEmail(String email, String code) {
+        String key = GlobalConstants.CAPTCHA_CODE_KEY + email;
+
+        String captcha = RedisUtils.getCacheObject(key);
+
+        if (captcha == null) {
+            throw new BaseException("验证码不存在或已过期！");
+        }
+
+        // 去掉多余的引号
+        captcha = captcha.replace("\"", "");
+
+        if (!code.equals(captcha)) {
             throw new BaseException("验证码错误,请重试！");
         }
+
+        // 验证成功，删除验证码
+        RedisUtils.deleteObject(key);
     }
+
+
+
+
 
     /**
      * 校验验证码

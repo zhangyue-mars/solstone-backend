@@ -18,5 +18,4 @@ public class RegisterBody extends LoginBody {
      * 注册域名
      */
     private String domainName;
-
 }

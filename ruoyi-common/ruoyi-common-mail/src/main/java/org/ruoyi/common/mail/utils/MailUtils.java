@@ -382,15 +382,25 @@ public class MailUtils {
      * @return {@link Session}
      * @since 5.5.7
      */
+//    public static Session getSession(MailAccount mailAccount, boolean isSingleton) {
+//        Authenticator authenticator = null;
+//        if (mailAccount.isAuth()) {
+//            authenticator = new UserPassAuthenticator(mailAccount.getUser(), mailAccount.getPass());
+//        }
+//
+//        return isSingleton ? Session.getDefaultInstance(mailAccount.getSmtpProps(), authenticator) //
+//            : Session.getInstance(mailAccount.getSmtpProps(), authenticator);
+//    }
     public static Session getSession(MailAccount mailAccount, boolean isSingleton) {
         Authenticator authenticator = null;
         if (mailAccount.isAuth()) {
             authenticator = new UserPassAuthenticator(mailAccount.getUser(), mailAccount.getPass());
         }
 
-        return isSingleton ? Session.getDefaultInstance(mailAccount.getSmtpProps(), authenticator) //
-            : Session.getInstance(mailAccount.getSmtpProps(), authenticator);
+        // 不再使用 getDefaultInstance，避免缓存旧配置
+        return Session.getInstance(mailAccount.getSmtpProps(), authenticator);
     }
+
 
     // ------------------------------------------------------------------------------------------------------------------------ Private method start
 
