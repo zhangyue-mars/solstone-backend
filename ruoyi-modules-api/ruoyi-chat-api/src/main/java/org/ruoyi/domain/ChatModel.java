@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 import org.ruoyi.core.domain.BaseEntity;
 
 import java.io.Serial;
-import java.util.List;
+
 
 /**
  * 聊天模型对象 chat_model
@@ -77,14 +77,14 @@ public class ChatModel extends BaseEntity {
     private String apiKey;
 
     /**
+     * 优先级
+     */
+    private Integer priority;
+
+    /**
      * 备注
      */
     private String remark;
-
-    /**
-     * 模型能力
-     */
-    private String modelCapability;
 
 
 }
