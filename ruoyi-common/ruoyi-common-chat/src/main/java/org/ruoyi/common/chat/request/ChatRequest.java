@@ -73,6 +73,11 @@ public class ChatRequest {
     private Boolean hasAttachment;
 
     /**
+     * 是否启用深度思考
+     */
+    private Boolean enableThinking;
+
+    /**
      * 是否自动切换模型
      */
     private Boolean autoSelectModel;

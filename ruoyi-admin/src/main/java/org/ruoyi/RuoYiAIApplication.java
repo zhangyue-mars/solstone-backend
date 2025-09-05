@@ -20,6 +20,6 @@ public class RuoYiAIApplication {
         SpringApplication application = new SpringApplication(RuoYiAIApplication.class);
         application.setApplicationStartup(new BufferingApplicationStartup(2048));
         application.run(args);
-        System.out.println("(♥◠‿◠)ﾉﾞ  RuoYiAI启动成功   ლ(´ڡ`ლ)ﾞ");
+        System.out.println("(♥◠‿◠)ﾉﾞ  SolStone启动成功   ლ(´ڡ`ლ)ﾞ");
     }
 }

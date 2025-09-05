@@ -18,7 +18,7 @@ public class IndexController {
      */
     @GetMapping("/")
     public String index() {
-        return "RuoYi AI启动成功！";
+        return "SolStone AI启动成功！";
     }
 
 

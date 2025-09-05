@@ -71,6 +71,7 @@ public class ChatModelServiceImpl implements IChatModelService {
         lqw.eq(StringUtils.isNotBlank(bo.getSystemPrompt()), ChatModel::getSystemPrompt, bo.getSystemPrompt());
         lqw.eq(StringUtils.isNotBlank(bo.getApiHost()), ChatModel::getApiHost, bo.getApiHost());
         lqw.eq(StringUtils.isNotBlank(bo.getApiKey()), ChatModel::getApiKey, bo.getApiKey());
+        lqw.eq(bo.getIsDeepThinking() != null, ChatModel::getIsDeepThinking, bo.getIsDeepThinking());
         return lqw;
     }
 

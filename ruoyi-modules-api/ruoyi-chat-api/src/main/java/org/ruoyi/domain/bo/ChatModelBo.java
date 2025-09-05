@@ -92,5 +92,12 @@ public class ChatModelBo extends BaseEntity {
     @NotBlank(message = "备注不能为空", groups = { AddGroup.class, EditGroup.class })
     private String remark;
 
+    /**
+     * 是否支持深度思考（0否 1是）
+     */
+    @NotNull(message = "是否支持深度思考不能为空", groups = { AddGroup.class, EditGroup.class })
+    private Integer isDeepThinking;
+
+
 
 }

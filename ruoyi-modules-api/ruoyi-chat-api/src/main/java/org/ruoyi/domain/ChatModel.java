@@ -86,5 +86,11 @@ public class ChatModel extends BaseEntity {
      */
     private String remark;
 
+    /**
+     * 是否支持深度思考（0否 1是）
+     */
+    private Integer isDeepThinking;
+
+
 
 }

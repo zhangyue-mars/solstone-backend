@@ -101,5 +101,12 @@ public class ChatModelVo implements Serializable {
     @ExcelProperty(value = "备注")
     private String remark;
 
+    /**
+     * 是否支持深度思考（0否 1是）
+     */
+    @ExcelProperty(value = "是否支持深度思考")
+    private Integer isDeepThinking;
+
+
 
 }
