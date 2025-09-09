@@ -21,12 +21,14 @@ import org.ruoyi.system.domain.bo.SysUserBo;
 import org.ruoyi.system.domain.vo.SysUserVo;
 import org.ruoyi.system.mapper.SysUserRoleMapper;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 注册校验方法
  *
  * @author Lion Li
  */
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class SysRegisterService {
@@ -87,21 +89,15 @@ public class SysRegisterService {
     /**
      * 校验邮箱验证码
      *
-     * @param username 用户名
+     * @param email 邮箱
+     * @param code 验证码
      */
-//    public void validateEmail(String username,String code) {
-////        String key = GlobalConstants.CAPTCHA_CODE_KEY + username;
-////         String captcha = RedisUtils.getCacheObject(key);
-////        if(code.equals(captcha)){
-////            RedisUtils.deleteObject(captcha);
-////        }else {
-////            throw new BaseException("验证码错误,请重试！");
-////        }
-////    }
     public void validateEmail(String email, String code) {
         String key = GlobalConstants.CAPTCHA_CODE_KEY + email;
 
         String captcha = RedisUtils.getCacheObject(key);
+        
+        log.info("验证邮箱验证码: email={}, inputCode={}, redisKey={}, redisCode={}", email, code, key, captcha);
 
         if (captcha == null) {
             throw new BaseException("验证码不存在或已过期！");
@@ -111,16 +107,12 @@ public class SysRegisterService {
         captcha = captcha.replace("\"", "");
 
         if (!code.equals(captcha)) {
-            throw new BaseException("验证码错误,请重试！");
+            throw new BaseException("验证码错误,请重试！您输入的验证码是: " + code + ", 系统期望的验证码是: " + captcha);
         }
 
         // 验证成功，删除验证码
         RedisUtils.deleteObject(key);
     }
-
-
-
-
 
     /**
      * 校验验证码

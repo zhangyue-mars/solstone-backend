@@ -119,7 +119,12 @@ public class SolStoneChatImpl  implements IChatService {
                 @Override
                 public void onError(Throwable error) {
                     System.err.println("错误: " + error.getMessage());
-                    ChatServiceHelper.onStreamError(emitter, error.getMessage());
+                    // 针对429错误提供更友好的错误信息
+                    String errorMsg = error.getMessage();
+                    if (errorMsg != null && errorMsg.contains("429")) {
+                        errorMsg = "请求频率超限，请稍后再试。";
+                    }
+                    ChatServiceHelper.onStreamError(emitter, errorMsg);
                 }
             });
 
@@ -221,22 +226,33 @@ public class SolStoneChatImpl  implements IChatService {
                 public void onResponse(Call call, Response response) throws IOException {
                     if (!response.isSuccessful()) {
                         try {
-                            log.error("深度思考请求失败，状态码: {}", response.code());
-                            emitter.send("深度思考请求失败，状态码: " + response.code());
-                            emitter.complete();
-                            return;
+                            String errorMsg = "深度思考请求失败，状态码: " + response.code();
+                            // 针对429错误提供更具体的错误信息
+                            if (response.code() == 429) {
+                                errorMsg = "请求频率超限，请稍后再试。";
+                            }
+                            
+                            log.error("深度思考请求失败，状态码: {}，原因: {}", response.code(), response.message());
+                            emitter.send(SseEmitter.event().data(errorMsg).name("error"));
                         } catch (IOException e) {
                             log.error("发送错误消息失败: {}", e.getMessage(), e);
-                            return;
+                        } finally {
+                            emitter.complete();
                         }
+                        return; // 确保在错误情况下退出方法
                     }
 
                     try (ResponseBody responseBody = response.body()) {
                         if (responseBody == null) {
                             log.error("响应体为空");
-                            emitter.send("响应体为空");
-                            emitter.complete();
-                            return;
+                            try {
+                                emitter.send(SseEmitter.event().data("响应体为空").name("error"));
+                            } catch (IOException e) {
+                                log.error("发送错误消息失败: {}", e.getMessage(), e);
+                            } finally {
+                                emitter.complete();
+                            }
+                            return; // 确保在错误情况下退出方法
                         }
 
                         // 流式读取响应
@@ -244,10 +260,11 @@ public class SolStoneChatImpl  implements IChatService {
                     } catch (Exception e) {
                         log.error("处理响应时出错: {}", e.getMessage(), e);
                         try {
-                            emitter.send("处理响应时出错: " + e.getMessage());
-                            emitter.complete();
+                            emitter.send(SseEmitter.event().data("处理响应时出错: " + e.getMessage()).name("error"));
                         } catch (IOException ioException) {
                             log.error("发送错误消息失败: {}", ioException.getMessage(), ioException);
+                        } finally {
+                            emitter.complete();
                         }
                     }
                 }
@@ -324,9 +341,10 @@ public class SolStoneChatImpl  implements IChatService {
             log.error("读取响应流时出错: {}", e.getMessage(), e);
             try {
                 emitter.send(SseEmitter.event().data("读取响应流时出错: " + e.getMessage()).name("error"));
-                emitter.complete();
             } catch (IOException ioException) {
                 log.error("发送错误消息失败: {}", ioException.getMessage(), ioException);
+            } finally {
+                emitter.complete();
             }
         }
     }

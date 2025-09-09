@@ -28,12 +28,15 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Date;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * S3 存储协议 所有兼容S3协议的云厂商均支持
  * 阿里云 腾讯云 七牛云 minio
  *
  * @author Lion Li
  */
+@Slf4j
 public class OssClient {
 
     private final String configKey;
@@ -89,7 +92,8 @@ public class OssClient {
             client.createBucket(createBucketRequest);
             client.setBucketPolicy(bucketName, getPolicy(bucketName, accessPolicy.getPolicyType()));
         } catch (Exception e) {
-            throw new OssException("创建Bucket失败, 请核对配置信息:[" + e.getMessage() + "]");
+            // 改进错误处理：记录警告日志但不中断初始化过程
+            log.warn("创建Bucket失败, 请检查配置信息:[" + e.getMessage() + "]，但将继续初始化OSS客户端");
         }
     }
 
