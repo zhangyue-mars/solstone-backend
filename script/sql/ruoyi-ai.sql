@@ -418,6 +418,7 @@ INSERT INTO `sys_dict_data` VALUES (1938227141741633537, '000000', 1, '通义千
 INSERT INTO `sys_dict_data` VALUES (1938227191834206209, '000000', 1, '知识库向量模型-vector', 'vector', 'chat_model_category', null, '', 'N', '0', 103, 1, '2025-06-26 21:25:48', 1, '2025-06-26 21:25:48', null);
 INSERT INTO `sys_dict_data` VALUES (1938227249417805826, '000000', 1, '图片识别模型-image', 'image', 'chat_model_category', null, '', 'N', '0', 103, 1, '2025-06-26 21:26:01', 1, '2025-06-26 21:26:01', null);
 INSERT INTO `sys_dict_data` VALUES (1940594785010503681, '000000', 1, 'FASTGPT-fastgpt', 'fastgpt', 'chat_model_category', null, '', 'N', '0', 103, 1, '2025-07-03 10:13:46', 1, '2025-07-03 10:13:46', null);
+INSERT INTO `sys_dict_data` VALUES (1940594785010503682, '000000', 1, '太阳石-solstone', 'solstone', 'chat_model_category', null, '', 'N', '0', 103, 1, '2025-07-03 10:13:46', 1, '2025-07-03 10:13:46', null);
 
 -- ----------------------------
 -- Table structure for sys_dict_type

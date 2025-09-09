@@ -19,7 +19,9 @@ public enum ChatModeType {
 
     IMAGE("image", "图片识别模型"),
 
-    FASTGPT("fastgpt", "FASTGPT");
+    FASTGPT("fastgpt", "FASTGPT"),
+
+    SOLSTONE("solstone", "太阳石");
 
     private final String code;
     private final String description;
