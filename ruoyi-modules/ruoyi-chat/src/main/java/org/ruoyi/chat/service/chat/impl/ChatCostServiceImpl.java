@@ -106,6 +106,7 @@ public class ChatCostServiceImpl implements IChatCostService {
                 chatMessageBo.setDeductCost(cost);
             }else {
                 // 按token扣费
+                cost = cost / 4; // 临时措施，为了将token价格控制在4元内。（张越2025年9月10日修改）
                 Double numberCost = totalTokens * cost;
                 System.out.println("deductToken->按token扣费 计算token数量: "+totalTokens);
                 System.out.println("deductToken->按token扣费 每token的价格: "+cost);
@@ -169,11 +170,13 @@ public class ChatCostServiceImpl implements IChatCostService {
             throw new ServiceException("余额不足, 请充值");
         }
 
-
+        // 保留6位小数
+        double newBalance = Math.round((userBalance - numberCost) * 1000000.0) / 1000000.0;
+        newBalance = Math.max(newBalance, 0);
 
         sysUserMapper.update(null,
             new LambdaUpdateWrapper<SysUser>()
-                .set(SysUser::getUserBalance, Math.max(userBalance - numberCost, 0))
+                .set(SysUser::getUserBalance, newBalance)
                 .eq(SysUser::getUserId, userId));
     }
 

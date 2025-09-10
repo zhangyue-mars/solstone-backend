@@ -231,18 +231,21 @@ public class SseServiceImpl implements ISseService {
      */
     private void buildChatMessageList(ChatRequest chatRequest) {
         List<Message> messages = chatRequest.getMessages();
+        String sysPrompt;
 
         // 处理知识库相关逻辑
-        String sysPrompt = processKnowledgeBase(chatRequest, messages);
+        // 先修改成如果是deepseek-v3.1作为solstone,就能识别系统提示词。其他模型不识别提示词。（张越2025年9月10日）
+        if(chatRequest.getModel().equals("deepseek/deepseek-v3.1")){
+            sysPrompt = processKnowledgeBase(chatRequest, messages);
+            // 设置系统提示词
+            Message sysMessage = Message.builder()
+                    .content(sysPrompt)
+                    .role(Message.Role.SYSTEM)
+                    .build();
+            messages.add(0, sysMessage);
 
-        // 设置系统提示词
-        Message sysMessage = Message.builder()
-                .content(sysPrompt)
-                .role(Message.Role.SYSTEM)
-                .build();
-        messages.add(0, sysMessage);
-
-        chatRequest.setSysPrompt(sysPrompt);
+            chatRequest.setSysPrompt(sysPrompt);
+        }
 
         // 用户对话内容
         String chatString = null;
