@@ -58,7 +58,7 @@ public class SysRegisterService {
         if (!userService.checkUserNameUnique(sysUser)) {
             throw new UserException("添加用户失败", username);
         }
-        sysUser.setUserBalance(1.0);
+        sysUser.setUserBalance(0.0001);
         SysUser user = userService.registerUser(sysUser, tenantId);
         if (user == null) {
             throw new UserException("用户注册失败!");
