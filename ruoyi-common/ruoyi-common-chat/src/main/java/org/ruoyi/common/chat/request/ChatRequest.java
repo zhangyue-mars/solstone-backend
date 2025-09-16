@@ -87,4 +87,9 @@ public class ChatRequest {
      */
     private String token;
 
+    /**
+     * 是否使用系统提示词
+     */
+    private Boolean useSystemPrompt;
+
 }

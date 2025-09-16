@@ -107,6 +107,13 @@ public class ChatModelVo implements Serializable {
     @ExcelProperty(value = "是否支持深度思考")
     private Integer isDeepThinking;
 
+    /**
+     * 是否使用系统提示词（0否 1是）
+     * 数据库默认值为1，如果数据库中未设置该值或查询为null，则在业务逻辑中应视为1（使用系统提示词）
+     */
+    @ExcelProperty(value = "是否使用系统提示词")
+    private Integer useSystemPrompt;
+
 
 
 }

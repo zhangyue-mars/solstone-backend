@@ -1,6 +1,8 @@
 package org.ruoyi.domain;
 
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -91,6 +93,9 @@ public class ChatModel extends BaseEntity {
      */
     private Integer isDeepThinking;
 
-
+    /**
+     * 是否使用系统提示词（0否 1是）
+     */
+    private Integer useSystemPrompt;
 
 }

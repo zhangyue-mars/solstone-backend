@@ -74,8 +74,6 @@ public class SseServiceImpl implements ISseService {
 
     private final IKnowledgeInfoService knowledgeInfoService;
 
-    private ChatModelVo chatModelVo;
-
     // 提示词模板服务
     private final IPromptTemplateService promptTemplateService;
 
@@ -129,14 +127,28 @@ public class SseServiceImpl implements ISseService {
                 }
             }
             // 自动选择模型并获取对应的聊天服务
-            IChatService chatService = autoSelectModelAndGetService(chatRequest);
+            ChatModelVo currentModelVo = null;
+            if (Boolean.TRUE.equals(chatRequest.getHasAttachment())) {
+                currentModelVo = selectModelByCategory("image");
+            } else if (Boolean.TRUE.equals(chatRequest.getAutoSelectModel())) {
+                currentModelVo = selectModelByCategory("chat");
+            } else {
+                currentModelVo = chatModelService.selectModelByName(chatRequest.getModel());
+            }
+
+            if (currentModelVo == null) {
+                throw new IllegalStateException("未找到模型名称：" + chatRequest.getModel());
+            }
+            
+            // 自动设置请求参数中的模型名称
+            chatRequest.setModel(currentModelVo.getModelName());
+            IChatService chatService = chatServiceFactory.getChatService(currentModelVo.getCategory());
 
             // 仅当 autoSelectModel = true 时，才启用重试与降级
             if (Boolean.TRUE.equals(chatRequest.getAutoSelectModel())) {
-                ChatModelVo currentModel = this.chatModelVo;
-                String currentCategory = currentModel.getCategory();
+                String currentCategory = currentModelVo.getCategory();
                 ChatRetryHelper.executeWithRetry(
-                        currentModel,
+                        currentModelVo,
                         currentCategory,
                         chatModelService,
                         sseEmitter,
@@ -169,6 +181,7 @@ public class SseServiceImpl implements ISseService {
      */
     private IChatService autoSelectModelAndGetService(ChatRequest chatRequest) {
         try {
+            ChatModelVo chatModelVo = null;
             if (Boolean.TRUE.equals(chatRequest.getHasAttachment())) {
                 chatModelVo = selectModelByCategory("image");
             } else if (Boolean.TRUE.equals(chatRequest.getAutoSelectModel())) {
@@ -184,6 +197,32 @@ public class SseServiceImpl implements ISseService {
             chatRequest.setModel(chatModelVo.getModelName());
             // 直接返回对应的聊天服务
             return chatServiceFactory.getChatService(chatModelVo.getCategory());
+        } catch (Exception e) {
+            log.error("模型选择和服务获取失败: {}", e.getMessage(), e);
+            throw new IllegalStateException("模型选择和服务获取失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 自动选择模型并获取对应的聊天服务
+     */
+    private IChatService autoSelectModelAndGetService(ChatRequest chatRequest, ChatModelVo currentModelVo) {
+        try {
+            if (Boolean.TRUE.equals(chatRequest.getHasAttachment())) {
+                currentModelVo = selectModelByCategory("image");
+            } else if (Boolean.TRUE.equals(chatRequest.getAutoSelectModel())) {
+                currentModelVo = selectModelByCategory("chat");
+            } else {
+                currentModelVo = chatModelService.selectModelByName(chatRequest.getModel());
+            }
+
+            if (currentModelVo == null) {
+                throw new IllegalStateException("未找到模型名称：" + chatRequest.getModel());
+            }
+            // 自动设置请求参数中的模型名称
+            chatRequest.setModel(currentModelVo.getModelName());
+            // 直接返回对应的聊天服务
+            return chatServiceFactory.getChatService(currentModelVo.getCategory());
         } catch (Exception e) {
             log.error("模型选择和服务获取失败: {}", e.getMessage(), e);
             throw new IllegalStateException("模型选择和服务获取失败: " + e.getMessage());
@@ -235,7 +274,13 @@ public class SseServiceImpl implements ISseService {
 
         // 处理知识库相关逻辑
         // 先修改成如果是deepseek-v3.1作为solstone,就能识别系统提示词。其他模型不识别提示词。（张越2025年9月10日）
-        if(chatRequest.getModel().equals("deepseek/deepseek-v3.1")){
+        // 修复useSystemPrompt始终为true的问题，每次都从数据库获取最新配置
+        ChatModelVo currentModelVo = chatModelService.selectModelByName(chatRequest.getModel());
+        boolean useSystemPrompt = currentModelVo != null ? 
+            (currentModelVo.getUseSystemPrompt() != null ? currentModelVo.getUseSystemPrompt() == 1 : true) : 
+            true;
+            
+        if(useSystemPrompt){
             sysPrompt = processKnowledgeBase(chatRequest, messages);
             // 设置系统提示词
             Message sysMessage = Message.builder()
@@ -266,7 +311,7 @@ public class SseServiceImpl implements ISseService {
      */
     private String processKnowledgeBase(ChatRequest chatRequest, List<Message> messages) {
         if (StringUtils.isEmpty(chatRequest.getKid())) {
-            return getPromptTemplatePrompt(promptTemplateEnum.VECTOR.getDesc());
+            return getPromptTemplatePrompt(promptTemplateEnum.VECTOR.getDesc(), chatRequest);
         }
 
         try {
@@ -274,14 +319,14 @@ public class SseServiceImpl implements ISseService {
             KnowledgeInfoVo knowledgeInfoVo = knowledgeInfoService.queryById(Long.valueOf(chatRequest.getKid()));
             if (knowledgeInfoVo == null) {
                 log.warn("知识库信息不存在，kid: {}", chatRequest.getKid());
-                return getPromptTemplatePrompt(promptTemplateEnum.VECTOR.getDesc());
+                return getPromptTemplatePrompt(promptTemplateEnum.VECTOR.getDesc(), chatRequest);
             }
 
             // 查询向量模型配置信息
             ChatModelVo chatModel = chatModelService.selectModelByName(knowledgeInfoVo.getEmbeddingModelName());
             if (chatModel == null) {
                 log.warn("向量模型配置不存在，模型名称: {}", knowledgeInfoVo.getEmbeddingModelName());
-                return getPromptTemplatePrompt(promptTemplateEnum.VECTOR.getDesc());
+                return getPromptTemplatePrompt(promptTemplateEnum.VECTOR.getDesc(), chatRequest);
             }
 
             // 构建向量查询参数
@@ -298,7 +343,7 @@ public class SseServiceImpl implements ISseService {
 
         } catch (Exception e) {
             log.error("处理知识库信息失败: {}", e.getMessage(), e);
-            return getPromptTemplatePrompt(promptTemplateEnum.VECTOR.getDesc());
+            return getPromptTemplatePrompt(promptTemplateEnum.VECTOR.getDesc(), chatRequest);
         }
     }
 
@@ -355,10 +400,10 @@ public class SseServiceImpl implements ISseService {
     /**
      * 获取提示词模板提示词
      */
-    private String getPromptTemplatePrompt(String category) {
+    private String getPromptTemplatePrompt(String category, ChatRequest chatRequest) {
         PromptTemplateVo promptTemplateVo = promptTemplateService.queryByCategory(category);
         if (Objects.isNull(promptTemplateVo) || StringUtils.isEmpty(promptTemplateVo.getTemplateContent())) {
-            return getDefaultSystemPrompt();
+            return getDefaultSystemPrompt(chatRequest);
         }
         return promptTemplateVo.getTemplateContent();
     }
@@ -366,8 +411,9 @@ public class SseServiceImpl implements ISseService {
     /**
      * 获取默认系统提示词
      */
-    private String getDefaultSystemPrompt() {
-        String sysPrompt = chatModelVo != null ? chatModelVo.getSystemPrompt() : null;
+    private String getDefaultSystemPrompt(ChatRequest chatRequest) {
+        ChatModelVo currentModelVo = chatModelService.selectModelByName(chatRequest.getModel());
+        String sysPrompt = currentModelVo != null ? currentModelVo.getSystemPrompt() : null;
         if (StringUtils.isEmpty(sysPrompt)) {
             sysPrompt = "你是一个由RuoYI-AI开发的人工智能助手，名字叫RuoYI人工智能助手。"
                     + "你擅长中英文对话，能够理解并处理各种问题，提供安全、有帮助、准确的回答。"

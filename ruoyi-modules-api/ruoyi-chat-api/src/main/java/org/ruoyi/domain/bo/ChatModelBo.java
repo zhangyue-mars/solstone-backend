@@ -98,6 +98,10 @@ public class ChatModelBo extends BaseEntity {
     @NotNull(message = "是否支持深度思考不能为空", groups = { AddGroup.class, EditGroup.class })
     private Integer isDeepThinking;
 
-
+    /**
+     * 是否使用系统提示词（0否 1是）
+     * 数据库默认值为1，如果数据库中未设置该值或查询为null，则在业务逻辑中应视为1（使用系统提示词）
+     */
+    private Integer useSystemPrompt;
 
 }
