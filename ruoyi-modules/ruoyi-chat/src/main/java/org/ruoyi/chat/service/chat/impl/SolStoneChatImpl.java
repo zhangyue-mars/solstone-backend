@@ -72,7 +72,7 @@ public class SolStoneChatImpl  implements IChatService {
         List<dev.langchain4j.data.message.ChatMessage> messages = new ArrayList<>();
         
         // 添加系统提示词
-        String systemPrompt = "";
+        String systemPrompt = "系统提示词";
         if (chatRequest.getSysPrompt() != null && !chatRequest.getSysPrompt().isEmpty()) {
             systemPrompt = chatRequest.getSysPrompt();
             systemPrompt = "###角色设定\n" +
@@ -174,7 +174,7 @@ public class SolStoneChatImpl  implements IChatService {
 //            if (chatRequest.getSysPrompt() != null && !chatRequest.getSysPrompt().isEmpty()) {
 //                systemPrompt = chatRequest.getSysPrompt();
 //            }
-            String systemPrompt = "";
+            String systemPrompt = "系统提示词";
             if (chatRequest.getSysPrompt() != null && !chatRequest.getSysPrompt().isEmpty()) {
                 systemPrompt = chatRequest.getSysPrompt();
                 systemPrompt = "###角色设定\n" +

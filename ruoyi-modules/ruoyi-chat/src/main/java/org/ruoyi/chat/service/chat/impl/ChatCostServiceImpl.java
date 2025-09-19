@@ -99,6 +99,10 @@ public class ChatCostServiceImpl implements IChatCostService {
         if (totalTokens >= 100) {// 如果总token数大于等于100,进行费用扣除
 
             ChatModelVo chatModelVo = chatModelService.selectModelByName(modelName);
+            if (chatModelVo == null) {
+                throw new ServiceException("找不到模型: " + modelName + "，请检查模型配置");
+            }
+            
             double cost = chatModelVo.getModelPrice();
             if (BillingType.TIMES.getCode().equals(chatModelVo.getModelType())) {
                 // 按次数扣费
