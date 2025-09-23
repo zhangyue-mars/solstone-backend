@@ -159,7 +159,7 @@ public class SolStoneChatImpl  implements IChatService {
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", chatModelVo.getModelName());
             requestBody.put("response_format", Map.of("type", "text"));
-            requestBody.put("max_tokens", 81920);
+            requestBody.put("max_tokens", 4000); // 修复：将max_tokens从81920改为4000，符合API要求
             requestBody.put("temperature", 1);
             requestBody.put("top_p", 1);
             requestBody.put("top_k", 50);
