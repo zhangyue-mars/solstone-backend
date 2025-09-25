@@ -105,7 +105,7 @@ public class VectorStoreServiceImpl implements VectorStoreService {
         String kid = storeEmbeddingBo.getKid();
         String docId = storeEmbeddingBo.getDocId();
 
-        log.info("向量存储条数记录: {}", chunkList.size());
+        log.info("开始向量存储，文档ID: {}, 总条数: {}", docId, chunkList.size());
 
         for (int i = 0; i < chunkList.size(); i++) {
             String text = chunkList.get(i);
@@ -125,8 +125,13 @@ public class VectorStoreServiceImpl implements VectorStoreService {
                     .withProperties(properties)
                     .withVector(vector)
                     .run();
+            
+            // 每处理10条记录输出一次进度日志
+            if ((i + 1) % 10 == 0 || i == chunkList.size() - 1) {
+                log.info("向量存储进度: 文档ID={}, 已处理 {}/{} 条", docId, i + 1, chunkList.size());
+            }
         }
-        log.info("向量存储完成");
+        log.info("向量存储完成，文档ID: {}, 总条数: {}", docId, chunkList.size());
     }
 
     private static Float[] toObjectArray(float[] primitive) {
@@ -168,12 +173,19 @@ public class VectorStoreServiceImpl implements VectorStoreService {
             if (result != null && !result.hasErrors()) {
                 Object data = result.getResult().getData();
                 JSONObject entries = new JSONObject(data);
+
+                // 空值检查，防止 NPE
                 Map<String, Object> entriesMap = entries.get("Get", Map.class);
+                if (entriesMap == null) {
+                    log.warn("GraphQL 返回数据中没有 'Get' 节点，返回空列表");
+                    return Collections.emptyList();
+                }
+
                 Object classObjects = entriesMap.get(className);
                 
                 // 添加空值检查，防止 JSONNull 转换异常
                 if (classObjects == null || classObjects instanceof cn.hutool.json.JSONNull) {
-                   log.info("查询结果为空，返回空列表");
+                   log.warn("查询结果为空，返回空列表");
                     return resultList;
                 }
                 

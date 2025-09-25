@@ -264,8 +264,10 @@ public class KnowledgeInfoServiceImpl implements IKnowledgeInfoService {
     }
 
     @Override
-    public void upload(KnowledgeInfoUploadBo bo) {
+    public void upload(KnowledgeInfoUploadBo bo) throws Exception {
+        log.info("开始处理文件上传，知识库ID: {}", bo.getKid());
         storeContent(bo.getFile(), bo.getKid());
+        log.info("文件上传处理完成，知识库ID: {}", bo.getKid());
     }
 
     public void storeContent(MultipartFile file, String kid) {
@@ -322,7 +324,10 @@ public class KnowledgeInfoServiceImpl implements IKnowledgeInfoService {
         storeEmbeddingBo.setEmbeddingModelName(knowledgeInfoVo.getEmbeddingModelName());
         storeEmbeddingBo.setApiKey(chatModelVo.getApiKey());
         storeEmbeddingBo.setBaseUrl(chatModelVo.getApiHost());
+        
+        log.info("开始向量化处理，文档ID: {}, 分片数量: {}", docId, chunkList.size());
         vectorStoreService.storeEmbeddings(storeEmbeddingBo);
+        log.info("向量化处理完成，文档ID: {}", docId);
     }
 
     /**

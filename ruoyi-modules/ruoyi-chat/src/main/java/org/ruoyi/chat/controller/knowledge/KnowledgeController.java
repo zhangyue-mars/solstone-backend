@@ -140,6 +140,7 @@ public class KnowledgeController extends BaseController {
      */
     @PostMapping(value = "/attach/upload")
     public R<String> upload(KnowledgeInfoUploadBo bo) throws Exception {
+        // 同步处理文件上传和向量化，等待全部完成后才返回响应给前端
         knowledgeInfoService.upload(bo);
         return R.ok("上传知识库附件成功!");
     }

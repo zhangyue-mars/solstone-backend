@@ -116,7 +116,7 @@ public class SolStoneChatImpl  implements IChatService {
                 public void onPartialResponse(String partialResponse) {
                     emitter.send(partialResponse);
 //                    log.info("收到消息片段: {}", partialResponse);
-                    System.out.print(partialResponse);
+//                    System.out.print(partialResponse);
                 }
 
                 @Override
