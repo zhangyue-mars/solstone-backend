@@ -115,7 +115,7 @@ public class SolStoneChatImpl  implements IChatService {
                 @Override
                 public void onPartialResponse(String partialResponse) {
                     emitter.send(partialResponse);
-                    log.info("收到消息片段: {}", partialResponse);
+//                    log.info("收到消息片段: {}", partialResponse);
                     System.out.print(partialResponse);
                 }
 
@@ -332,7 +332,7 @@ public class SolStoneChatImpl  implements IChatService {
                                 if (delta.containsKey("reasoning_content") && delta.get("reasoning_content") != null) {
                                     String reasoningChunk = delta.get("reasoning_content").toString();
                                     emitter.send(SseEmitter.event().data(reasoningChunk).name("thinking"));
-                                    log.debug("Reasoning Chunk: {}", reasoningChunk);
+//                                    log.debug("Reasoning Chunk: {}", reasoningChunk);
                                 }
 
                                 // 推送正式回答
@@ -346,7 +346,7 @@ public class SolStoneChatImpl  implements IChatService {
                                     }
 
                                     emitter.send(SseEmitter.event().data(content).name("answer"));
-                                    log.debug("Answer Chunk:{}", content);
+//                                    log.debug("Answer Chunk:{}", content);
                                 }
                             }
                         }

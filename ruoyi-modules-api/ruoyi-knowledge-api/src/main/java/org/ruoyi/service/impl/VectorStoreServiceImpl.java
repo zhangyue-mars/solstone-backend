@@ -54,6 +54,11 @@ public class VectorStoreServiceImpl implements VectorStoreService {
         // 检查类是否存在
         Result<Schema> schemaResult = client.schema().getter().run();
         Schema schema = schemaResult.getResult();
+        if (schema == null) {
+            log.error("无法获取Weaviate schema，可能连接失败: {}", schemaResult.getError());
+            throw new RuntimeException("无法连接到向量数据库，请检查配置和服务状态");
+        }
+        
         boolean classExists = false;
         for (WeaviateClass weaviateClass : schema.getClasses()) {
             if (weaviateClass.getClassName().equals(className)) {
@@ -163,8 +168,16 @@ public class VectorStoreServiceImpl implements VectorStoreService {
             if (result != null && !result.hasErrors()) {
                 Object data = result.getResult().getData();
                 JSONObject entries = new JSONObject(data);
-                Map<String, cn.hutool.json.JSONArray> entriesMap = entries.get("Get", Map.class);
-                cn.hutool.json.JSONArray objects = entriesMap.get(className);
+                Map<String, Object> entriesMap = entries.get("Get", Map.class);
+                Object classObjects = entriesMap.get(className);
+                
+                // 添加空值检查，防止 JSONNull 转换异常
+                if (classObjects == null || classObjects instanceof cn.hutool.json.JSONNull) {
+                   log.info("查询结果为空，返回空列表");
+                    return resultList;
+                }
+                
+                cn.hutool.json.JSONArray objects = (cn.hutool.json.JSONArray) classObjects;
                 if (objects.isEmpty()) return resultList;
 
                 for (Object object : objects) {
@@ -172,7 +185,7 @@ public class VectorStoreServiceImpl implements VectorStoreService {
                     resultList.add(map.get("text"));
                 }
 
-                log.info("检索到 {} 条知识库片段", resultList.size());
+                log.info("==> 检索到 {} 条知识库片段", resultList.size());
                 return resultList;
             } else {
                 log.error("GraphQL 查询失败: {}", result != null ? result.getError() : "result为空");
